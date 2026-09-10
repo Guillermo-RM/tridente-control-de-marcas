@@ -30,6 +30,7 @@ declare
   v_worker public.profiles%rowtype;
   v_checkpoint public.checkpoints%rowtype;
   v_id uuid;
+  v_existing_status public.location_status;
   v_a double precision;
   v_distance numeric;
   v_status public.location_status := 'unavailable';
@@ -69,13 +70,13 @@ begin
   where worker_id = p_worker_id
     and scanned_at < v_now - interval '6 months';
 
-  select se.id, se.location_status into v_id, v_status
+  select se.id, se.location_status into v_id, v_existing_status
   from public.scan_events se
   where se.worker_id = p_worker_id and se.checkpoint_id = p_checkpoint_id
     and se.scanned_at > v_now - interval '60 seconds'
   order by se.scanned_at desc limit 1;
   if v_id is not null then
-    return query select v_id, false, v_status;
+    return query select v_id, false, v_existing_status;
     return;
   end if;
 

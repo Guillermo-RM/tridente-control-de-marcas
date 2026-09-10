@@ -24,6 +24,7 @@ const condo = '30000000-0000-4000-8000-000000000001';
 const condoB = '30000000-0000-4000-8000-000000000002';
 const cp = '40000000-0000-4000-8000-000000000001';
 const cpB = '40000000-0000-4000-8000-000000000002';
+const cpWithoutLocation = '40000000-0000-4000-8000-000000000003';
 const login = async (id, aal = 'aal1') => {
   await db.exec('reset role');
   await db.query("select set_config('request.jwt.claims', $1, false)", [JSON.stringify({ sub: id, aal })]);
@@ -49,7 +50,7 @@ try {
     alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
     alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
   `);
-  for (const name of ['0001_priority_one_foundation', '0002_operations', '0003_nickname_login', '0004_security_hardening', '0005_remove_master_mfa_requirement', '0006_remove_worker_recovery_email', '0007_lightweight_scan_retention', '0008_master_only_scan_history']) {
+  for (const name of ['0001_priority_one_foundation', '0002_operations', '0003_nickname_login', '0004_security_hardening', '0005_remove_master_mfa_requirement', '0006_remove_worker_recovery_email', '0007_lightweight_scan_retention', '0008_master_only_scan_history', '0009_fix_scan_location_status_null']) {
     let sql = await readFile(new URL(`../supabase/migrations/${name}.sql`, import.meta.url), 'utf8');
     sql = sql.replace('create extension if not exists pgcrypto with schema extensions;', '-- pgcrypto UUID shim installed above');
     await db.exec(sql);
@@ -67,6 +68,7 @@ try {
       ('${condoB}','${orgB}','Condo B','Address B','${other}');
     insert into public.checkpoints(id,organization_id,condominium_id,name,latitude,longitude,created_by) values
       ('${cp}','${orgA}','${condo}','Checkpoint A',10,10,'${master}'),
+      ('${cpWithoutLocation}','${orgA}','${condo}','Checkpoint Without Location',null,null,'${master}'),
       ('${cpB}','${orgB}','${condoB}','Checkpoint B',0,0,'${other}');
     insert into public.worker_assignments(organization_id,worker_id,condominium_id,assigned_by)
       values ('${orgA}','${worker}','${condo}','${master}');
@@ -124,11 +126,16 @@ try {
     assert.equal((await db.query(scan())).rows[0].created, false);
     assert.equal(await scalar('select count(*)::int from public.scan_events'), 1);
   });
+  await check('RPC stores unavailable status when checkpoint has no location', async () => {
+    const result = await db.query(scan('null', 'null', cpWithoutLocation));
+    assert.equal(result.rows[0].created, true);
+    assert.equal(result.rows[0].scan_location_status, 'unavailable');
+  });
   await check('workers cannot read scan history while masters retain access', async () => {
     await login(worker);
     assert.equal(await scalar('select count(*)::int from public.scan_events'), 0);
     await login(master);
-    assert.equal(await scalar('select count(*)::int from public.scan_events'), 1);
+    assert.equal(await scalar('select count(*)::int from public.scan_events'), 2);
   });
   await check('composite foreign keys reject cross-tenant historical relationships', async () => {
     await db.exec('reset role');
