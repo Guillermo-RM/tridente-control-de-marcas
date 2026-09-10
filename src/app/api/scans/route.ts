@@ -67,6 +67,13 @@ export async function POST(request: Request) {
   }
 
   if (error || !Array.isArray(data) || !data[0]) {
+    console.error("[api/scans] record_scan_event failed", {
+      code: error?.code ?? null,
+      message: error?.message ?? null,
+      details: error?.details ?? null,
+      hint: error?.hint ?? null,
+      resultShape: Array.isArray(data) ? `array:${data.length}` : typeof data,
+    });
     const forbidden = error?.message.includes("assignment_required") || error?.message.includes("not_allowed");
     return NextResponse.json(
       { message: forbidden ? "No estás asignado a este condominio." : "No se pudo guardar la marca." },
