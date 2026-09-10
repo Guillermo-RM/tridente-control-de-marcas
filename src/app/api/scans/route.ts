@@ -100,6 +100,7 @@ export async function POST(request: Request) {
     created: data[0].created,
     checkpointName: checkpoint.name,
     locationStatus,
+    locationCaptured: parsed.data.latitude !== null && parsed.data.longitude !== null,
     message: data[0].created ? "Marca guardada correctamente." : "Esta marca ya se registró hace menos de un minuto.",
   }, { status: data[0].created ? 201 : 200 });
 }

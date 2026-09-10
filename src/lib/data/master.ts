@@ -103,7 +103,7 @@ export async function getCondominiumWorkspace(id: string) {
       .eq("condominium_id", id)
       .eq("active", true),
     admin.from("scan_events")
-      .select("id, worker_id, worker_name_snapshot, checkpoint_name_snapshot, scanned_at, location_status")
+      .select("id, worker_id, worker_name_snapshot, checkpoint_name_snapshot, scanned_at, location_status, latitude, longitude")
       .eq("organization_id", organizationId)
       .eq("condominium_id", id)
       .gte("scanned_at", sixMonthsAgo.toISOString())

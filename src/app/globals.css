@@ -292,6 +292,11 @@ th { color: var(--muted); background: #f8faf8; font-size: 0.78rem; text-transfor
 .location-chip.verified { color: #075338; background: #e3f5ec; }
 .location-chip.outside { color: #a04425; background: #fff0e9; }
 .location-chip.unavailable { color: #5e6460; background: #eceeec; }
+.location-chip.captured { color: #164e63; background: #e0f2fe; }
+.scan-location { display: inline-flex; align-items: center; gap: 9px; }
+.scan-location.compact { align-items: flex-end; flex-direction: column; }
+.map-link { color: var(--primary); font-size: 0.8rem; font-weight: 750; text-decoration: underline; text-underline-offset: 2px; }
+.map-link:hover { color: #03452f; }
 .history-row > div { display: grid; gap: 5px; }
 .history-row > div:last-child { justify-items: end; }
 .history-row span, .history-row time { color: var(--muted); font-size: 0.88rem; }

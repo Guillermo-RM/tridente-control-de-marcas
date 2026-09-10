@@ -9,6 +9,7 @@ type ResultState = {
   kind: "success" | "warning" | "error";
   message: string;
   checkpointName?: string;
+  detail?: string;
 } | null;
 
 function getPosition() {
@@ -59,10 +60,19 @@ export function QrScanner({ initialToken }: { initialToken?: string }) {
         }),
       });
       const data = await response.json();
+      const hasLocation = data.locationCaptured === true;
+      const locationWarning = data.locationStatus === "outside" || !hasLocation;
       setResult({
-        kind: response.ok ? (data.locationStatus === "verified" ? "success" : "warning") : "error",
+        kind: response.ok ? (locationWarning ? "warning" : "success") : "error",
         message: data.message ?? "No se pudo procesar la marca.",
         checkpointName: data.checkpointName,
+        detail: response.ok
+          ? data.locationStatus === "outside"
+            ? "La ubicación quedó registrada fuera de la zona configurada."
+            : hasLocation
+              ? "Ubicación del dispositivo registrada."
+              : "La marca se guardó sin coordenadas del dispositivo."
+          : undefined,
       });
     } catch {
       setResult({ kind: "error", message: "Sin conexión. La marca no fue enviada; vuelve a intentarlo." });
@@ -111,7 +121,7 @@ export function QrScanner({ initialToken }: { initialToken?: string }) {
         <div aria-live="polite" className={`scan-result ${result.kind}`} role="status">
           {result.checkpointName ? <strong>{result.checkpointName}</strong> : null}
           <span>{result.message}</span>
-          {result.kind === "warning" ? <small>La marca quedó guardada con una alerta de ubicación.</small> : null}
+          {result.detail ? <small>{result.detail}</small> : null}
         </div>
       ) : null}
     </section>

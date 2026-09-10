@@ -1,13 +1,8 @@
 import Link from "next/link";
 
+import { ScanLocation } from "@/components/scan-location";
 import { relationName } from "@/lib/data/relations";
 import { getMasterReport } from "@/lib/data/reports";
-
-function statusLabel(status: string) {
-  if (status === "verified") return "Ubicación verificada";
-  if (status === "outside") return "Fuera de zona";
-  return "Sin ubicación";
-}
 
 export default async function ReportsPage({
   searchParams,
@@ -58,7 +53,13 @@ export default async function ReportsPage({
                 <td>{event.worker_name_snapshot}</td>
                 <td>{relationName(event.condominiums)}</td>
                 <td>{event.checkpoint_name_snapshot}</td>
-                <td><span className={`location-chip ${event.location_status}`}>{statusLabel(event.location_status)}</span></td>
+                <td>
+                  <ScanLocation
+                    latitude={event.latitude}
+                    longitude={event.longitude}
+                    status={event.location_status}
+                  />
+                </td>
                 <td>{event.ip_address ?? "—"}</td>
               </tr>
             ))}

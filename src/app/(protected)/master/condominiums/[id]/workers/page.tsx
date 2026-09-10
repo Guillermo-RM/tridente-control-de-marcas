@@ -1,13 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ScanLocation } from "@/components/scan-location";
 import { getCondominiumWorkspace } from "@/lib/data/master";
-
-function locationLabel(status: string) {
-  if (status === "verified") return "Verificada";
-  if (status === "outside") return "Fuera de zona";
-  return "Sin ubicación";
-}
 
 export default async function CondominiumWorkersPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -45,7 +40,12 @@ export default async function CondominiumWorkersPage({ params }: { params: Promi
                     {workerEvents.slice(0, 5).map((event) => (
                       <div className="compact-mark" key={event.id}>
                         <div><strong>{event.checkpoint_name_snapshot}</strong><time>{new Intl.DateTimeFormat("es-CR", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Costa_Rica" }).format(new Date(event.scanned_at))}</time></div>
-                        <span className={`location-chip ${event.location_status}`}>{locationLabel(event.location_status)}</span>
+                        <ScanLocation
+                          compact
+                          latitude={event.latitude}
+                          longitude={event.longitude}
+                          status={event.location_status}
+                        />
                       </div>
                     ))}
                     {workerEvents.length === 0 ? <p className="empty-inline">Sin marcas durante los últimos seis meses.</p> : null}
