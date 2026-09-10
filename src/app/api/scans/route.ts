@@ -67,8 +67,9 @@ export async function POST(request: Request) {
   }
 
   if (error || !Array.isArray(data) || !data[0]) {
+    const diagnosticCode = error?.code ?? "INVALID_RPC_RESULT";
     console.error("[api/scans] record_scan_event failed", {
-      code: error?.code ?? null,
+      code: diagnosticCode,
       message: error?.message ?? null,
       details: error?.details ?? null,
       hint: error?.hint ?? null,
@@ -76,7 +77,11 @@ export async function POST(request: Request) {
     });
     const forbidden = error?.message.includes("assignment_required") || error?.message.includes("not_allowed");
     return NextResponse.json(
-      { message: forbidden ? "No estás asignado a este condominio." : "No se pudo guardar la marca." },
+      {
+        message: forbidden
+          ? "No estás asignado a este condominio."
+          : `No se pudo guardar la marca. Código: ${diagnosticCode}`,
+      },
       { status: forbidden ? 403 : 500 },
     );
   }
