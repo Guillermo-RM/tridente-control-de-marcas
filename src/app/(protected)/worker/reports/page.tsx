@@ -10,7 +10,6 @@ export default async function WorkerReportsPage() {
     <section className="worker-panel incident-report-page">
       <span className="eyebrow">Reporte protegido</span>
       <h1>Reportes</h1>
-      <p className="lead">Registra situaciones observadas durante tu recorrido con fotografía y ubicación verificable.</p>
       <IncidentReportForm condominiums={condominiums} />
     </section>
   );

@@ -109,6 +109,22 @@ button:disabled { cursor: wait; opacity: 0.65; }
 .user-menu { display: flex; align-items: center; gap: 18px; }
 .user-menu > span { display: grid; text-align: right; }
 .user-menu small { color: var(--muted); }
+.incident-notification { position: relative; }
+.incident-notification-button { display: inline-flex; min-height: 42px; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid var(--border); border-radius: 10px; color: var(--foreground); background: white; font-weight: 750; }
+.incident-notification-button:hover, .incident-notification-button[aria-expanded="true"] { border-color: #9fc8b7; background: #f2faf6; }
+.notification-symbol { display: inline-grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; color: white; background: var(--primary); font-weight: 850; }
+.incident-notification-menu { position: absolute; z-index: 40; top: calc(100% + 10px); right: 0; width: min(380px, calc(100vw - 32px)); overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: white; box-shadow: 0 18px 48px rgb(20 48 35 / 18%); text-align: left; }
+.notification-menu-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.notification-menu-heading span { display: inline-grid; min-width: 25px; height: 25px; padding: 0 6px; place-items: center; border-radius: 999px; color: white; background: #b42318; font-size: 0.75rem; font-weight: 850; }
+.notification-list { max-height: 360px; overflow-y: auto; }
+.notification-list a { display: grid; gap: 3px; padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--foreground); text-decoration: none; }
+.notification-list a:hover { background: #f2faf6; }
+.notification-list span, .notification-list small { color: var(--muted); }
+.notification-list small { font-size: 0.76rem; }
+.notification-empty, .notification-note { margin: 0; padding: 16px; color: var(--muted); font-size: 0.86rem; }
+.notification-note { padding-block: 9px; background: #f8faf8; text-align: center; }
+.notification-view-all { display: block; padding: 13px 16px; color: var(--primary); font-size: 0.88rem; font-weight: 800; text-align: center; text-decoration: none; }
+.notification-view-all:hover { background: var(--accent); }
 .secondary-button { padding: 9px 13px; border: 1px solid var(--border); background: white; }
 .app-content { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 72px 0; }
 .lead { max-width: 650px; margin-bottom: 38px; }
@@ -318,6 +334,9 @@ th { color: var(--muted); background: #f8faf8; font-size: 0.78rem; text-transfor
 .map-link:hover { color: #03452f; }
 .report-load-sentinel { display: flex; min-height: 58px; align-items: center; justify-content: center; padding: 12px; color: var(--muted); font-size: 0.86rem; }
 .incident-table-wrap .error-banner { margin: 12px; }
+.incidents-filter-prompt { padding: 38px 24px; color: var(--muted); text-align: center; }
+.incidents-filter-prompt strong { color: var(--foreground); font-size: 1rem; }
+.incidents-filter-prompt p { margin: 8px 0 0; }
 .incident-table-wrap select { min-width: 118px; padding: 8px; border: 1px solid #cbd5ce; border-radius: 8px; background: white; }
 .incident-description { min-width: 260px; max-width: 420px; white-space: normal; line-height: 1.45; }
 .incident-accuracy { display: block; margin-top: 5px; color: var(--muted); }
@@ -337,7 +356,9 @@ th { color: var(--muted); background: #f8faf8; font-size: 0.78rem; text-transfor
 @media (max-width: 760px) {
   .auth-card { padding: 28px; }
   .app-header, .user-menu { align-items: flex-start; }
+  .user-menu { gap: 8px; }
   .user-menu > span { display: none; }
+  .incident-notification-button > span:nth-child(2) { display: none; }
   .app-content { width: min(100% - 32px, 1180px); padding-top: 46px; }
   .directory-page { margin-top: -22px; }
   .module-grid, .condominium-modules, .worker-module-grid { grid-template-columns: 1fr; }

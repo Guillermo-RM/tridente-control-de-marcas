@@ -26,6 +26,49 @@ export async function getUnreadIncidentCount(context: AuthContext) {
   return Math.max(0, Number(data) || 0);
 }
 
+export type IncidentNotification = {
+  condominiumId: string;
+  condominiumName: string;
+  id: string;
+  reportedAt: string;
+  workerId: string;
+  workerName: string;
+};
+
+export async function getRecentUnreadIncidentNotifications(context: AuthContext) {
+  if (context.profile.role !== "master") return [];
+  const admin = createAdminClient();
+  const recent = await admin.from("incident_reports")
+    .select("id, condominium_id, worker_id, worker_name_snapshot, condominium_name_snapshot, reported_at")
+    .eq("organization_id", context.profile.organization_id)
+    .order("reported_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(50);
+  if (recent.error) throw new Error("No se pudieron consultar las incidencias nuevas.");
+
+  const rows = recent.data ?? [];
+  if (rows.length === 0) return [];
+  const viewed = await admin.from("incident_report_views")
+    .select("incident_id")
+    .eq("organization_id", context.profile.organization_id)
+    .eq("master_user_id", context.user.id)
+    .in("incident_id", rows.map((row) => row.id));
+  if (viewed.error) throw new Error("No se pudieron consultar las incidencias nuevas.");
+
+  const viewedIds = new Set((viewed.data ?? []).map((row) => row.incident_id));
+  return rows
+    .filter((row) => !viewedIds.has(row.id))
+    .slice(0, 50)
+    .map((row): IncidentNotification => ({
+      condominiumId: row.condominium_id,
+      condominiumName: row.condominium_name_snapshot,
+      id: row.id,
+      reportedAt: row.reported_at,
+      workerId: row.worker_id,
+      workerName: row.worker_name_snapshot,
+    }));
+}
+
 export type IncidentFilters = {
   condominiumId?: string;
   workerId?: string;

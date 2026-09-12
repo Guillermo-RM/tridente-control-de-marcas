@@ -113,7 +113,7 @@ export function InfiniteIncidentTable({
         <thead><tr><th>Fecha</th><th>Oficial</th><th>Condominio</th><th>Tipo</th><th>Descripción</th><th>Evidencia</th><th>Ubicación</th><th>Estado</th></tr></thead>
         <tbody>
           {incidents.map((incident) => (
-            <tr className={incident.is_unread ? "incident-row-unread" : undefined} key={incident.id}>
+            <tr className={incident.is_unread ? "incident-row-unread" : undefined} id={`incident-${incident.id}`} key={incident.id}>
               <td>
                 {formatCostaRicaDateTime(incident.reported_at)}
                 {incident.is_unread ? <span className="incident-new-chip">Nueva</span> : null}

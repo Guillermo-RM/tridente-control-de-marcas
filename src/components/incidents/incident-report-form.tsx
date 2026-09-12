@@ -161,7 +161,6 @@ export function IncidentReportForm({ condominiums }: { condominiums: { id: strin
       <label>
         Descripción
         <textarea minLength={10} maxLength={2000} name="description" placeholder="Describe claramente qué ocurrió, dónde y cualquier detalle importante." required rows={6} />
-        <small>Entre 10 y 2.000 caracteres. No incluyas contraseñas ni información innecesaria.</small>
       </label>
       <label>
         Fotografía de evidencia
@@ -172,7 +171,6 @@ export function IncidentReportForm({ condominiums }: { condominiums: { id: strin
           required
           type="file"
         />
-        <small>Se reduce antes de enviarse y se almacena de forma privada.</small>
       </label>
       {preview ? (
         <div className="incident-preview">
@@ -180,10 +178,7 @@ export function IncidentReportForm({ condominiums }: { condominiums: { id: strin
         </div>
       ) : null}
       <div className="incident-location-box">
-        <div>
-          <strong>Ubicación obligatoria</strong>
-          <p>Se captura al enviar y queda registrada con su nivel de precisión.</p>
-        </div>
+        <strong>Ubicación obligatoria</strong>
         <button className="secondary-button" disabled={isLocating || isSubmitting} onClick={() => void captureLocation()} type="button">
           {isLocating ? "Ubicando…" : location ? "Actualizar ubicación" : "Obtener ubicación"}
         </button>

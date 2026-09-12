@@ -33,18 +33,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: "Filtro no válido." }, { status: 400 });
   }
 
+  const filters = {
+    condominiumId: optionalParam(url, "condominiumId"),
+    workerId: optionalParam(url, "workerId"),
+    status,
+    from: optionalParam(url, "from"),
+    to: optionalParam(url, "to"),
+  };
+  if (!filters.condominiumId && !filters.workerId && !filters.status && !filters.from && !filters.to) {
+    return NextResponse.json({ message: "Selecciona al menos un filtro." }, { status: 400 });
+  }
+
   try {
     const page = await getMasterIncidentPage(
       context.profile.organization_id,
       context.user.id,
       optionalParam(url, "cursor"),
-      {
-        condominiumId: optionalParam(url, "condominiumId"),
-        workerId: optionalParam(url, "workerId"),
-        status,
-        from: optionalParam(url, "from"),
-        to: optionalParam(url, "to"),
-      },
+      filters,
     );
     return NextResponse.json(page, { headers: { "Cache-Control": "private, no-store" } });
   } catch {

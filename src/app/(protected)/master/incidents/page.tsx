@@ -26,7 +26,10 @@ export default async function IncidentsPage({
     from: from || undefined,
     to: to || undefined,
   };
-  const firstPage = await getMasterIncidentPage(context.profile.organization_id, context.user.id, null, filters);
+  const hasFilters = Boolean(condominiumId || workerId || status || from || to);
+  const firstPage = hasFilters
+    ? await getMasterIncidentPage(context.profile.organization_id, context.user.id, null, filters)
+    : { incidents: [], nextCursor: null };
 
   return (
     <section>
@@ -34,20 +37,27 @@ export default async function IncidentsPage({
         <div><span className="eyebrow">Seguimiento operativo</span><h1>Incidencias</h1></div>
       </div>
       <form className="filter-bar incident-filter-bar">
-        <label>Condominio<select defaultValue={condominiumId} name="condominiumId"><option value="">Todos</option>{condominiums.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-        <label>Oficial<select defaultValue={workerId} name="workerId"><option value="">Todos</option>{workers.map((item) => <option key={item.id} value={item.id}>{item.full_name}</option>)}</select></label>
-        <label>Estado<select defaultValue={status ?? ""} name="status"><option value="">Todos</option>{incidentStatuses.map((item) => <option key={item} value={item}>{INCIDENT_STATUS_LABELS[item]}</option>)}</select></label>
+        <label>Condominio<select defaultValue={condominiumId} name="condominiumId"><option value="">Seleccionar</option>{condominiums.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+        <label>Oficial<select defaultValue={workerId} name="workerId"><option value="">Seleccionar</option>{workers.map((item) => <option key={item.id} value={item.id}>{item.full_name}</option>)}</select></label>
+        <label>Estado<select defaultValue={status ?? ""} name="status"><option value="">Cualquier estado</option>{incidentStatuses.map((item) => <option key={item} value={item}>{INCIDENT_STATUS_LABELS[item]}</option>)}</select></label>
         <label>Desde<input defaultValue={from} name="from" type="date" /></label>
         <label>Hasta<input defaultValue={to} name="to" type="date" /></label>
         <button type="submit">Filtrar</button>
         {condominiumId || workerId || status || from || to ? <Link className="secondary-link report-clear-link" href="/master/incidents">Limpiar filtros</Link> : null}
       </form>
-      <InfiniteIncidentTable
-        filters={filters}
-        initialIncidents={firstPage.incidents}
-        initialNextCursor={firstPage.nextCursor}
-        key={`${condominiumId}:${workerId}:${status}:${from}:${to}`}
-      />
+      {hasFilters ? (
+        <InfiniteIncidentTable
+          filters={filters}
+          initialIncidents={firstPage.incidents}
+          initialNextCursor={firstPage.nextCursor}
+          key={`${condominiumId}:${workerId}:${status}:${from}:${to}`}
+        />
+      ) : (
+        <div className="table-wrap incidents-filter-prompt">
+          <strong>Selecciona al menos un filtro</strong>
+          <p>Las incidencias se cargarán únicamente por condominio, oficial, estado o rango de fechas.</p>
+        </div>
+      )}
     </section>
   );
 }

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import type { Profile } from "@/lib/auth/types";
-import { IncidentNotificationBadge } from "@/components/incidents/incident-notification-badge";
 
 type NavigationItem = {
   activePaths: string[];
@@ -25,7 +24,7 @@ const workerItems: NavigationItem[] = [
   { href: "/worker/reports", label: "Reportes", activePaths: ["/worker/reports", "/worker/incidents"] },
 ];
 
-export function AppNavigation({ initialUnreadIncidents, role }: { initialUnreadIncidents: number; role: Profile["role"] }) {
+export function AppNavigation({ role }: { role: Profile["role"] }) {
   const pathname = usePathname();
   const items = role === "master" ? masterItems : workerItems;
 
@@ -38,7 +37,6 @@ export function AppNavigation({ initialUnreadIncidents, role }: { initialUnreadI
         return (
           <Link aria-current={active ? "page" : undefined} href={item.href} key={item.href}>
             {item.label}
-            {role === "master" && item.href === "/master/incidents" ? <IncidentNotificationBadge initialCount={initialUnreadIncidents} /> : null}
           </Link>
         );
       })}

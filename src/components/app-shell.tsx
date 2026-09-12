@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { logoutAction } from "@/app/actions/auth";
 import { AppNavigation } from "@/components/app-navigation";
+import { IncidentNotificationButton } from "@/components/incidents/incident-notification-button";
 import type { AuthContext } from "@/lib/auth/types";
 
 export function AppShell({
@@ -21,6 +22,7 @@ export function AppShell({
           <span>Tridente Control</span>
         </Link>
         <div className="user-menu">
+          {context.profile.role === "master" ? <IncidentNotificationButton initialCount={initialUnreadIncidents} /> : null}
           <span>
             <strong>{context.profile.full_name}</strong>
             <small>{context.profile.role === "master" ? "userMaster" : "Trabajador"}</small>
@@ -30,7 +32,7 @@ export function AppShell({
           </form>
         </div>
       </header>
-      <AppNavigation initialUnreadIncidents={initialUnreadIncidents} role={context.profile.role} />
+      <AppNavigation role={context.profile.role} />
       <main className="app-content">{children}</main>
     </div>
   );

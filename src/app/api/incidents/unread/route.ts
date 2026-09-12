@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getAuthContext } from "@/lib/auth/guards";
+import { getRecentUnreadIncidentNotifications, getUnreadIncidentCount } from "@/lib/data/incidents";
 import { hasSameOrigin } from "@/lib/security/request";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -13,17 +14,17 @@ export async function GET() {
     return NextResponse.json({ message: "Acceso no autorizado." }, { status: 401 });
   }
 
-  const { data, error } = await createAdminClient().rpc("count_unread_incident_reports", {
-    p_master_id: context.user.id,
-    p_organization_id: context.profile.organization_id,
-  });
-  if (error) {
-    console.error("[api/incidents/unread] count failed", error.code);
+  try {
+    const [count, incidents] = await Promise.all([
+      getUnreadIncidentCount(context),
+      getRecentUnreadIncidentNotifications(context),
+    ]);
+    return NextResponse.json({ count, incidents }, {
+      headers: { "Cache-Control": "private, no-store" },
+    });
+  } catch {
     return NextResponse.json({ message: "No se pudo consultar la notificación." }, { status: 500 });
   }
-  return NextResponse.json({ count: Math.max(0, Number(data) || 0) }, {
-    headers: { "Cache-Control": "private, no-store" },
-  });
 }
 
 export async function POST(request: Request) {
