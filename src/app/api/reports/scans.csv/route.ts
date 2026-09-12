@@ -1,48 +1,74 @@
 import { relationName } from "@/lib/data/relations";
-import { getMasterReport } from "@/lib/data/reports";
+import { getMasterReportExport } from "@/lib/data/reports";
+import { uuidSchema } from "@/lib/domain/schemas";
+import { csvRow, safeCsvFileSegment } from "@/lib/export/csv";
+import { costaRicaCsvDateTime } from "@/lib/format/costa-rica-date";
 import { presentLocation } from "@/lib/geo/location-presentation";
-
-function csvCell(value: unknown) {
-  let text = value == null ? "" : String(value);
-  if (/^[=+\-@]/.test(text)) text = `'${text}`;
-  return `"${text.replaceAll('"', '""')}"`;
-}
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
-  const { events } = await getMasterReport(
-    {
-      from: params.get("from") ?? undefined,
-      to: params.get("to") ?? undefined,
-      workerId: params.get("workerId") ?? undefined,
-      condominiumId: params.get("condominiumId") ?? undefined,
-    },
-    10_000,
-  );
+  const condominiumId = params.get("condominiumId") ?? "";
+  if (!uuidSchema.safeParse(condominiumId).success) {
+    return Response.json(
+      { message: "Selecciona un condominio válido." },
+      { status: 400 },
+    );
+  }
+
+  const workerId = params.get("workerId") || undefined;
+  if (workerId && !uuidSchema.safeParse(workerId).success) {
+    return Response.json({ message: "Oficial no válido." }, { status: 400 });
+  }
+
+  const { events, condominium } = await getMasterReportExport(condominiumId, {
+    workerId,
+    from: params.get("from") || undefined,
+    to: params.get("to") || undefined,
+  });
   const rows = events.map((event) => {
     const location = presentLocation(event.location_status, event.latitude, event.longitude);
+    const localDateTime = costaRicaCsvDateTime(event.scanned_at);
     return [
-      event.scanned_at,
+      localDateTime.date,
+      localDateTime.time,
       event.worker_name_snapshot,
       relationName(event.condominiums),
       event.checkpoint_name_snapshot,
       location.label,
-      location.mapUrl,
-      event.distance_meters,
       event.latitude,
       event.longitude,
       event.accuracy_meters,
+      event.distance_meters,
+      location.mapUrl,
       event.ip_address,
+      event.id,
+      event.scanned_at,
     ];
   });
   const csv = [
-    ["Fecha UTC", "Trabajador", "Condominio", "Marca", "Estado ubicación", "Mapa", "Distancia m", "Latitud", "Longitud", "Precisión m", "IP"],
+    [
+      "Fecha (Costa Rica)",
+      "Hora (Costa Rica)",
+      "Oficial",
+      "Condominio",
+      "Punto QR",
+      "Estado de ubicación",
+      "Latitud",
+      "Longitud",
+      "Precisión GPS (m)",
+      "Distancia al punto QR (m)",
+      "Mapa",
+      "Dirección IP",
+      "ID de marca",
+      "Fecha y hora UTC",
+    ],
     ...rows,
-  ].map((row) => row.map(csvCell).join(",")).join("\r\n");
+  ].map(csvRow).join("\r\n");
+  const condominiumName = safeCsvFileSegment(condominium.name);
   return new Response(`\uFEFF${csv}`, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="marcas-${new Date().toISOString().slice(0, 10)}.csv"`,
+      "Content-Disposition": `attachment; filename="marcas-${condominiumName}-${new Date().toISOString().slice(0, 10)}.csv"`,
       "Cache-Control": "private, no-store",
     },
   });

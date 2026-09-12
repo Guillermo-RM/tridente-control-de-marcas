@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { nicknameSchema } from "../auth/nickname";
+import { incidentStatuses, incidentTypes } from "./incidents";
 
 const optionalCoordinate = (minimum: number, maximum: number) =>
   z.preprocess(
@@ -46,6 +47,17 @@ export const scanRequestSchema = z.object({
 }).refine((data) => (data.latitude == null) === (data.longitude == null), {
   message: "Latitud y longitud deben indicarse juntas.",
 });
+
+export const incidentReportSchema = z.object({
+  condominiumId: z.uuid(),
+  incidentType: z.enum(incidentTypes),
+  description: z.string().trim().min(10, "Describe la situación con al menos 10 caracteres.").max(2000),
+  latitude: z.coerce.number().min(-90).max(90),
+  longitude: z.coerce.number().min(-180).max(180),
+  accuracyMeters: z.coerce.number().min(0).max(5000),
+});
+
+export const incidentStatusSchema = z.enum(incidentStatuses);
 
 export function formValues(formData: FormData) {
   return Object.fromEntries(formData.entries());

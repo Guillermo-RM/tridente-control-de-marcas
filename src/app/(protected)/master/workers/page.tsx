@@ -23,7 +23,18 @@ export default async function WorkersPage({ searchParams }: { searchParams: Prom
           content: (
             <article className="entity-row">
               <div><span className={item.active ? "status-chip" : "status-chip inactive"}>{item.active ? "Activo" : "Archivado"}</span><h2>{item.full_name}</h2><p>Código {item.employee_code}</p></div>
-              {item.active ? <div className="row-actions"><Link href={`/master/workers/${item.id}/edit`}>Editar</Link><form action={archiveWorkerAction.bind(null, item.id)}><button className="danger-button" type="submit">Archivar</button></form></div> : null}
+              <div className="row-actions">
+                <Link className="secondary-link worker-action-link" href={`/master/reports?workerId=${item.id}`}>Ver marcas</Link>
+                <Link className="secondary-link worker-action-link" href={`/master/workers/${item.id}/incidents`}>Ver incidencias</Link>
+                {item.active ? (
+                  <>
+                    <Link className="secondary-link worker-action-link" href={`/master/workers/${item.id}/edit`}>Editar</Link>
+                    <form action={archiveWorkerAction.bind(null, item.id)}>
+                      <button className="danger-button" type="submit">Archivar</button>
+                    </form>
+                  </>
+                ) : null}
+              </div>
             </article>
           ),
         }))}

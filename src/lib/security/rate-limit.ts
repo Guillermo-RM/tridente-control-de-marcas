@@ -15,6 +15,13 @@ function bucketKey(email: string, ip: string) {
     .digest("hex");
 }
 
+function actionBucketKey(action: string, actorId: string, ip: string) {
+  const { RATE_LIMIT_HASH_SECRET } = getServerEnv();
+  return createHmac("sha256", RATE_LIMIT_HASH_SECRET)
+    .update(`${action}|${actorId}|${ip}`)
+    .digest("hex");
+}
+
 export async function consumeLoginAttempt(email: string, ip: string) {
   const key = bucketKey(email, ip);
   const { data, error } = await createAdminClient().rpc(
@@ -37,4 +44,15 @@ export async function consumeLoginAttempt(email: string, ip: string) {
 export async function clearLoginAttempts(email: string, ip: string) {
   const key = bucketKey(email, ip);
   await createAdminClient().rpc("clear_auth_rate_limit", { p_bucket_key: key });
+}
+
+export async function consumeIncidentAttempt(actorId: string, ip: string) {
+  const { data, error } = await createAdminClient().rpc("consume_auth_rate_limit", {
+    p_bucket_key: actionBucketKey("incident", actorId, ip),
+    p_max_attempts: 10,
+    p_window_seconds: 10 * 60,
+    p_block_seconds: 10 * 60,
+  });
+
+  return !error && data === true;
 }

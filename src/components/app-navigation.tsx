@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import type { Profile } from "@/lib/auth/types";
+import { IncidentNotificationBadge } from "@/components/incidents/incident-notification-badge";
 
 type NavigationItem = {
   activePaths: string[];
@@ -15,15 +16,16 @@ const masterItems: NavigationItem[] = [
   { href: "/master/condominiums", label: "Condominios", activePaths: ["/master/condominiums"] },
   { href: "/master/workers", label: "Trabajadores", activePaths: ["/master/workers"] },
   { href: "/master/reports", label: "Reportes", activePaths: ["/master/reports"] },
+  { href: "/master/incidents", label: "Incidencias", activePaths: ["/master/incidents"] },
   { href: "/master/audit", label: "Auditoría", activePaths: ["/master/audit"] },
 ];
 
 const workerItems: NavigationItem[] = [
   { href: "/worker", label: "Escanear código", activePaths: ["/worker", "/scan"] },
-  { href: "/worker/incidents", label: "Reportar incidencias", activePaths: ["/worker/incidents"] },
+  { href: "/worker/reports", label: "Reportes", activePaths: ["/worker/reports", "/worker/incidents"] },
 ];
 
-export function AppNavigation({ role }: { role: Profile["role"] }) {
+export function AppNavigation({ initialUnreadIncidents, role }: { initialUnreadIncidents: number; role: Profile["role"] }) {
   const pathname = usePathname();
   const items = role === "master" ? masterItems : workerItems;
 
@@ -33,7 +35,12 @@ export function AppNavigation({ role }: { role: Profile["role"] }) {
         const active = item.activePaths.some((path) => (
           pathname === path || (role === "master" && pathname.startsWith(`${path}/`))
         ));
-        return <Link aria-current={active ? "page" : undefined} href={item.href} key={item.href}>{item.label}</Link>;
+        return (
+          <Link aria-current={active ? "page" : undefined} href={item.href} key={item.href}>
+            {item.label}
+            {role === "master" && item.href === "/master/incidents" ? <IncidentNotificationBadge initialCount={initialUnreadIncidents} /> : null}
+          </Link>
+        );
       })}
     </nav>
   );

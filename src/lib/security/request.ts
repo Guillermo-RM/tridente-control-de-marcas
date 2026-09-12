@@ -9,3 +9,17 @@ export function getClientIp(headers: Headers) {
 export function getUserAgent(headers: Headers) {
   return headers.get("user-agent")?.slice(0, 512) ?? null;
 }
+
+export function hasSameOrigin(headers: Headers) {
+  const origin = headers.get("origin");
+  if (!origin) return true;
+
+  const forwardedHost = headers.get("x-forwarded-host") ?? headers.get("host");
+  if (!forwardedHost) return false;
+
+  try {
+    return new URL(origin).host.toLowerCase() === forwardedHost.split(",")[0].trim().toLowerCase();
+  } catch {
+    return false;
+  }
+}

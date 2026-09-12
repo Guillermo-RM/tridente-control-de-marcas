@@ -12,7 +12,7 @@ export default async function ScanPage({ searchParams }: { searchParams: Promise
   if (context.profile.role !== "worker") redirect("/master/condominiums");
 
   return (
-    <AppShell context={context}>
+    <AppShell context={context} initialUnreadIncidents={0}>
       <section className="worker-panel worker-scan-page">
         <span className="eyebrow">Registro de recorrido</span>
         <h1>Escanear punto QR</h1>

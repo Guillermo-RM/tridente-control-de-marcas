@@ -6,9 +6,11 @@ import type { AuthContext } from "@/lib/auth/types";
 
 export function AppShell({
   context,
+  initialUnreadIncidents,
   children,
 }: {
   context: AuthContext;
+  initialUnreadIncidents: number;
   children: React.ReactNode;
 }) {
   return (
@@ -28,7 +30,7 @@ export function AppShell({
           </form>
         </div>
       </header>
-      <AppNavigation role={context.profile.role} />
+      <AppNavigation initialUnreadIncidents={initialUnreadIncidents} role={context.profile.role} />
       <main className="app-content">{children}</main>
     </div>
   );

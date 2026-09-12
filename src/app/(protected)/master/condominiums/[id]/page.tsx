@@ -22,7 +22,7 @@ export default async function CondominiumDetailPage({ params }: { params: Promis
         </div>
       </div>
 
-      <div className="module-grid condominium-modules">
+      <div className="module-grid">
         <article className="module-card">
           <span className="metric">{checkpoints.filter((item) => item.active).length}</span>
           <h2>Puntos QR</h2>
@@ -34,6 +34,18 @@ export default async function CondominiumDetailPage({ params }: { params: Promis
           <h2>Trabajadores asignados</h2>
           <p>Consulta trabajadores, sus marcas recientes y el espacio de incidencias.</p>
           <Link href={`/master/condominiums/${id}/workers`}>Ver trabajadores asignados</Link>
+        </article>
+        <article className="module-card">
+          <span className="metric">6</span>
+          <h2>Meses de marcas</h2>
+          <p>Consulta todas las marcas conservadas para este condominio.</p>
+          <Link href={`/master/reports?condominiumId=${id}`}>Ver todas las marcas</Link>
+        </article>
+        <article className="module-card">
+          <span className="metric" aria-hidden="true">!</span>
+          <h2>Incidencias</h2>
+          <p>Consulta fotografías, ubicación y estado de los reportes de este condominio.</p>
+          <Link href={`/master/incidents?condominiumId=${id}`}>Ver incidencias</Link>
         </article>
       </div>
     </section>

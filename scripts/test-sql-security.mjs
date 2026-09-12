@@ -50,7 +50,7 @@ try {
     alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
     alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
   `);
-  for (const name of ['0001_priority_one_foundation', '0002_operations', '0003_nickname_login', '0004_security_hardening', '0005_remove_master_mfa_requirement', '0006_remove_worker_recovery_email', '0007_lightweight_scan_retention', '0008_master_only_scan_history', '0009_fix_scan_location_status_null']) {
+  for (const name of ['0001_priority_one_foundation', '0002_operations', '0003_nickname_login', '0004_security_hardening', '0005_remove_master_mfa_requirement', '0006_remove_worker_recovery_email', '0007_lightweight_scan_retention', '0008_master_only_scan_history', '0009_fix_scan_location_status_null', '0010_scan_report_pagination_index', '0011_secure_incident_reporting', '0012_incident_unread_notifications']) {
     let sql = await readFile(new URL(`../supabase/migrations/${name}.sql`, import.meta.url), 'utf8');
     sql = sql.replace('create extension if not exists pgcrypto with schema extensions;', '-- pgcrypto UUID shim installed above');
     await db.exec(sql);
@@ -137,6 +137,38 @@ try {
     await login(master);
     assert.equal(await scalar('select count(*)::int from public.scan_events'), 2);
   });
+  await check('incident RPC validates assignment and hides history from workers', async () => {
+    await db.exec('reset role; set role service_role');
+    const incidentId = await scalar(`select public.record_incident_report(
+      '${worker}', '${condo}', 'damage', 'Broken lamp beside the north entrance',
+      '${orgA}/${worker}/evidence.jpg', 'image/jpeg', 12000, 10, 10, 8, '127.0.0.1'
+    )::text`);
+    assert.match(incidentId, /^[0-9a-f-]{36}$/);
+    await deny(`select public.record_incident_report(
+      '${worker}', '${condoB}', 'damage', 'Cross organization incident attempt',
+      '${orgA}/${worker}/other.jpg', 'image/jpeg', 12000, 10, 10, 8, '127.0.0.1'
+    )`, 'P0001');
+    await login(worker);
+    assert.equal(await scalar('select count(*)::int from public.incident_reports'), 0);
+    await deny(`select public.record_incident_report(
+      '${worker}', '${condo}', 'damage', 'Direct worker RPC attempt is blocked',
+      '${orgA}/${worker}/blocked.jpg', 'image/jpeg', 12000, 10, 10, 8, '127.0.0.1'
+    )`, '42501');
+    await login(master);
+    assert.equal(await scalar('select count(*)::int from public.incident_reports'), 1);
+  });
+  await check('unread incident notifications are private to each master', async () => {
+    await db.exec('reset role; set role service_role');
+    assert.equal(Number(await scalar(`select public.count_unread_incident_reports('${master}', '${orgA}')`)), 1);
+    const incidentId = await scalar('select id::text from public.incident_reports limit 1');
+    assert.equal(Number(await scalar(`select public.mark_incident_reports_viewed(
+      '${master}', '${orgA}', array['${incidentId}'::uuid]
+    )`)), 1);
+    assert.equal(Number(await scalar(`select public.count_unread_incident_reports('${master}', '${orgA}')`)), 0);
+    await login(worker);
+    await deny('select count(*)::int from public.incident_report_views', '42501');
+    await deny(`select public.count_unread_incident_reports('${master}', '${orgA}')`, '42501');
+  });
   await check('composite foreign keys reject cross-tenant historical relationships', async () => {
     await db.exec('reset role');
     await deny(`update public.scan_events set worker_id='${other}'`, '23503');
@@ -156,10 +188,10 @@ try {
   });
   await check('all application tables retain RLS and privileged functions have fixed search paths', async () => {
     assert.equal(await scalar(`select count(*)::int from pg_class c join pg_namespace n on n.oid=c.relnamespace
-      where n.nspname='public' and c.relname in ('organizations','profiles','condominiums','worker_assignments','checkpoints','scan_events','audit_logs','auth_rate_limits') and c.relrowsecurity`), 8);
+      where n.nspname='public' and c.relname in ('organizations','profiles','condominiums','worker_assignments','checkpoints','scan_events','incident_reports','incident_report_views','audit_logs','auth_rate_limits') and c.relrowsecurity`), 10);
     assert.equal(await scalar(`select count(*)::int from pg_proc p join pg_namespace n on n.oid=p.pronamespace
       where n.nspname='public' and p.prosecdef and not coalesce(p.proconfig @> array['search_path=""'], false)`), 0);
-    for (const signature of ['cleanup_scan_history()', 'record_scan_event(uuid,uuid,inet,numeric,numeric,numeric)', 'archive_worker(uuid,uuid)', 'archive_condominium(uuid,uuid)', 'clear_auth_rate_limit(text)']) {
+    for (const signature of ['cleanup_scan_history()', 'record_scan_event(uuid,uuid,inet,numeric,numeric,numeric)', 'record_incident_report(uuid,uuid,text,text,text,text,integer,numeric,numeric,numeric,inet)', 'count_unread_incident_reports(uuid,uuid)', 'mark_incident_reports_viewed(uuid,uuid,uuid[])', 'archive_worker(uuid,uuid)', 'archive_condominium(uuid,uuid)', 'clear_auth_rate_limit(text)']) {
       for (const role of ['anon', 'authenticated']) {
         assert.equal(await scalar(`select has_function_privilege('${role}','public.${signature}','EXECUTE')`), false);
       }
@@ -196,6 +228,12 @@ try {
     assert.equal(Number(await scalar('select public.cleanup_scan_history()')), 1);
     assert.equal(await scalar('select count(*)::int from public.scan_events'), 1);
     assert.equal(await scalar('select count(*)::int from public.audit_logs'), 1);
+  });
+  await check('condominium report cursor index is installed', async () => {
+    assert.equal(await scalar(`select count(*)::int from pg_indexes
+      where schemaname='public'
+      and tablename='scan_events'
+      and indexname='scan_events_condominium_cursor_idx'`), 1);
   });
   console.log(`${passed} SQL security checks passed (embedded PostgreSQL; mocked Supabase Auth).`);
 } finally {

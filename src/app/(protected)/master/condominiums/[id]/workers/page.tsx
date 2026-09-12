@@ -53,7 +53,8 @@ export default async function CondominiumWorkersPage({ params }: { params: Promi
                 </div>
                 <div className="incidents-placeholder">
                   <h3>Incidencias</h3>
-                  <p>El registro y seguimiento de incidencias se incorporará en la siguiente etapa.</p>
+                  <p>Consulta los reportes de este oficial dentro del condominio.</p>
+                  <Link href={`/master/incidents?condominiumId=${id}&workerId=${worker.id}`}>Ver incidencias</Link>
                 </div>
               </div>
             </article>
