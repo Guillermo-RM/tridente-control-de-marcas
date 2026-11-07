@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   loginAction,
@@ -11,6 +11,7 @@ const INITIAL_STATE: LoginState = { message: null };
 
 export function LoginForm({ next }: { next?: string }) {
   const [state, action, pending] = useActionState(loginAction, INITIAL_STATE);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   return (
     <form action={action} className="auth-form">
@@ -29,15 +30,27 @@ export function LoginForm({ next }: { next?: string }) {
           type="text"
         />
       </label>
-      <label>
-        Contraseña
-        <input
-          autoComplete="current-password"
-          name="password"
-          required
-          type="password"
-        />
-      </label>
+      <div className="grid gap-2">
+        <label htmlFor="login-password">Contraseña</label>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+          <input
+            autoComplete="current-password"
+            id="login-password"
+            name="password"
+            required
+            type={passwordVisible ? "text" : "password"}
+          />
+          <button
+            aria-controls="login-password"
+            aria-label={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
+            className="min-w-24"
+            onClick={() => setPasswordVisible((visible) => !visible)}
+            type="button"
+          >
+            {passwordVisible ? "Ocultar" : "Mostrar"}
+          </button>
+        </div>
+      </div>
       {state.message ? (
         <p aria-live="polite" className="form-error" role="alert">
           {state.message}
