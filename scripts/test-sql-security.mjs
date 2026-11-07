@@ -50,7 +50,7 @@ try {
     alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
     alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
   `);
-  for (const name of ['0001_priority_one_foundation', '0002_operations', '0003_nickname_login', '0004_security_hardening', '0005_remove_master_mfa_requirement', '0006_remove_worker_recovery_email', '0007_lightweight_scan_retention', '0008_master_only_scan_history', '0009_fix_scan_location_status_null', '0010_scan_report_pagination_index', '0011_secure_incident_reporting', '0012_incident_unread_notifications']) {
+  for (const name of ['0001_priority_one_foundation', '0002_operations', '0003_nickname_login', '0004_security_hardening', '0005_remove_master_mfa_requirement', '0006_remove_worker_recovery_email', '0007_lightweight_scan_retention', '0008_master_only_scan_history', '0009_fix_scan_location_status_null', '0010_scan_report_pagination_index', '0011_secure_incident_reporting', '0012_incident_unread_notifications', '0013_remove_worker_preserve_history']) {
     let sql = await readFile(new URL(`../supabase/migrations/${name}.sql`, import.meta.url), 'utf8');
     sql = sql.replace('create extension if not exists pgcrypto with schema extensions;', '-- pgcrypto UUID shim installed above');
     await db.exec(sql);
@@ -234,6 +234,25 @@ try {
       where schemaname='public'
       and tablename='scan_events'
       and indexname='scan_events_condominium_cursor_idx'`), 1);
+  });
+  await check('worker removal preserves history, blocks access and records a single audit event', async () => {
+    const remove = `select public.remove_worker('${orgA}', '${worker}', '${master}')`;
+    await login(worker);
+    await deny(remove, '42501');
+    await db.exec('reset role; set role service_role');
+    await deny(`select public.remove_worker('${orgA}', '${worker}', '${worker}')`, '42501');
+    await db.exec(`select public.remove_worker('${orgA}', '${other}', '${master}')`);
+    assert.equal(await scalar(`select deleted_at is null from public.profiles where id='${other}'`), true);
+    await db.exec(`${remove}; ${remove}`);
+    assert.equal(await scalar(`select not active and deleted_at is not null from public.profiles where id='${worker}'`), true);
+    assert.equal(await scalar(`select active from public.worker_assignments where worker_id='${worker}'`), false);
+    assert.equal(await scalar(`select count(*)::int from public.scan_events where worker_id='${worker}'`), 1);
+    assert.equal(await scalar(`select count(*)::int from public.incident_reports where worker_id='${worker}'`), 1);
+    assert.equal(await scalar(`select count(*)::int from public.audit_logs where action='worker.delete' and entity_id='${worker}'`), 1);
+    await deny(`update public.worker_assignments set active=true where worker_id='${worker}'`, '23514');
+    await deny(scan(), 'P0001');
+    await login(worker);
+    assert.equal(await scalar('select public.current_profile_role()'), null);
   });
   console.log(`${passed} SQL security checks passed (embedded PostgreSQL; mocked Supabase Auth).`);
 } finally {

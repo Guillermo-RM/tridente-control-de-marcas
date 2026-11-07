@@ -26,13 +26,11 @@ export default async function WorkersPage({ searchParams }: { searchParams: Prom
               <div className="row-actions">
                 <Link className="secondary-link worker-action-link" href={`/master/reports?workerId=${item.id}`}>Ver marcas</Link>
                 <Link className="secondary-link worker-action-link" href={`/master/workers/${item.id}/incidents`}>Ver incidencias</Link>
+                <Link className="secondary-link worker-action-link" href={`/master/workers/${item.id}/edit`}>Editar</Link>
                 {item.active ? (
-                  <>
-                    <Link className="secondary-link worker-action-link" href={`/master/workers/${item.id}/edit`}>Editar</Link>
-                    <form action={archiveWorkerAction.bind(null, item.id)}>
-                      <button className="danger-button" type="submit">Archivar</button>
-                    </form>
-                  </>
+                  <form action={archiveWorkerAction.bind(null, item.id)}>
+                    <button className="danger-button" type="submit">Archivar</button>
+                  </form>
                 ) : null}
               </div>
             </article>

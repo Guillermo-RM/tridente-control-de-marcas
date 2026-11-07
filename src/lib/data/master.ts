@@ -36,7 +36,7 @@ export async function getWorkersList(search = "") {
   if (term) query = query.ilike("full_name", `%${term}%`);
   const result = await query;
   if (result.error) throw new Error("No se pudieron cargar los trabajadores.");
-  return { context, workers: result.data };
+  return { context, workers: result.data.filter((worker) => !worker.deleted_at) };
 }
 
 export async function getMasterData() {

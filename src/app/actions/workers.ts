@@ -83,7 +83,7 @@ export async function updateWorkerAction(id: string, formData: FormData) {
 
   const admin = createAdminClient();
   const before = await admin.from("profiles").select("*").eq("id", id).eq("organization_id", context.profile.organization_id).eq("role", "worker").single();
-  if (!before.data) redirectWithError("/master/workers", "Trabajador no encontrado.");
+  if (!before.data || before.data.deleted_at) redirectWithError("/master/workers", "Trabajador no encontrado.");
 
   const existing = await admin.from("profiles").select("id").eq("nickname", parsed.data.nickname).neq("id", id).maybeSingle();
   if (existing.error) redirectWithError(`/master/workers/${id}/edit`, "No se pudo verificar el nickname.");
@@ -124,9 +124,31 @@ export async function archiveWorkerAction(id: string) {
   if (!uuidSchema.safeParse(id).success) return;
   const admin = createAdminClient();
   const before = await admin.from("profiles").select("*").eq("id", id).eq("organization_id", context.profile.organization_id).eq("role", "worker").single();
-  if (!before.data) return;
+  if (!before.data || before.data.deleted_at) return;
   const { error } = await admin.rpc("archive_worker", { p_organization_id: context.profile.organization_id, p_worker_id: id });
   if (error) throw new Error("No se pudo archivar el trabajador.");
   await auditAction(context, { action: "worker.archive", entityType: "worker", entityId: id, before: before.data, after: { active: false } });
   revalidatePath("/master");
+}
+
+export async function deleteWorkerAction(id: string) {
+  const context = await requireMaster();
+  if (!uuidSchema.safeParse(id).success) {
+    redirectWithError("/master/workers", "Identificador inválido.");
+  }
+
+  const { error } = await createAdminClient().rpc("remove_worker", {
+    p_organization_id: context.profile.organization_id,
+    p_worker_id: id,
+    p_master_id: context.user.id,
+  });
+  if (error) {
+    const message = error.code === "PGRST202"
+      ? "La eliminación de trabajadores aún no está habilitada en la base de datos."
+      : "No se pudo eliminar el trabajador.";
+    redirectWithError(`/master/workers/${id}/edit`, message);
+  }
+
+  revalidatePath("/master", "layout");
+  redirect("/master/workers");
 }
