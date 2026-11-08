@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/back-link";
 import { notFound } from "next/navigation";
 
 import { updateCondominiumAction } from "@/app/actions/condominiums";
@@ -9,5 +10,5 @@ export default async function EditCondominiumPage({ params, searchParams }: { pa
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const { condominium } = await getCondominium(id);
   if (!condominium) notFound();
-  return <section className="form-page"><span className="eyebrow">Edición</span><h1>{condominium.name}</h1><ErrorBanner message={typeof query.error === "string" ? query.error : undefined} /><CondominiumForm action={updateCondominiumAction.bind(null, id)} condominium={condominium} /></section>;
+  return <section className="form-page"><BackLink href={`/master/condominiums/${id}`} label="Volver al condominio" /><span className="eyebrow">Edición</span><h1>{condominium.name}</h1><ErrorBanner message={typeof query.error === "string" ? query.error : undefined} /><CondominiumForm action={updateCondominiumAction.bind(null, id)} condominium={condominium} /></section>;
 }

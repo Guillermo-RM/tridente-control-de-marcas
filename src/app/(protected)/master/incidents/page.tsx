@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BackLink } from "@/components/back-link";
 import { InfiniteIncidentTable } from "@/components/incidents/infinite-incident-table";
 import { getIncidentFacets, getMasterIncidentPage } from "@/lib/data/incidents";
 import { INCIDENT_STATUS_LABELS, incidentStatuses, type IncidentStatus } from "@/lib/domain/incidents";
@@ -33,6 +34,11 @@ export default async function IncidentsPage({
 
   return (
     <section>
+      {condominiumId ? (
+        <BackLink href={`/master/condominiums/${condominiumId}`} label="Volver al condominio" />
+      ) : workerId ? (
+        <BackLink href="/master/workers" label="Volver a trabajadores" />
+      ) : null}
       <div className="page-heading">
         <div><span className="eyebrow">Seguimiento operativo</span><h1>Incidencias</h1></div>
       </div>

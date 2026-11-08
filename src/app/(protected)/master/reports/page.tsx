@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BackLink } from "@/components/back-link";
 import { InfiniteScanTable } from "@/components/reports/infinite-scan-table";
 import {
   getMasterReportPage,
@@ -45,6 +46,7 @@ export default async function ReportsPage({
 
   return (
     <section>
+      {condominiumId ? <BackLink href={`/master/condominiums/${condominiumId}`} label="Volver al condominio" /> : null}
       <div className="page-heading">
         <div>
           <span className="eyebrow">Histórico de seis meses</span>

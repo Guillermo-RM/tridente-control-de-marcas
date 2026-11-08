@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { INCIDENT_NOTIFICATIONS_CHANGED, INCIDENT_STATUS_LABELS, INCIDENT_TYPE_LABELS, incidentStatuses, type IncidentStatus } from "@/lib/domain/incidents";
@@ -33,6 +34,9 @@ export function InfiniteIncidentTable({
     if (filters.from) params.set("from", filters.from);
     if (filters.to) params.set("to", filters.to);
   }, [filters.condominiumId, filters.from, filters.status, filters.to, filters.workerId]);
+
+  const detailFilters = new URLSearchParams();
+  addFilters(detailFilters);
 
   const loadNext = useCallback(async () => {
     if (!nextCursor || loadingRef.current) return;
@@ -122,7 +126,7 @@ export function InfiniteIncidentTable({
               <td>{incident.condominium_name_snapshot}</td>
               <td>{INCIDENT_TYPE_LABELS[incident.incident_type]}</td>
               <td className="incident-description">{incident.description}</td>
-              <td><a className="map-link" href={`/api/incidents/${incident.id}/evidence`} rel="noreferrer" target="_blank">Ver fotografía</a></td>
+              <td><Link className="map-link" href={`/master/incidents/${incident.id}?${detailFilters}`} prefetch={false}>Ver reporte y foto</Link></td>
               <td>
                 <a className="map-link" href={`https://www.google.com/maps?q=${incident.latitude},${incident.longitude}`} rel="noreferrer" target="_blank">Ver mapa</a>
                 <small className="incident-accuracy">± {Math.round(incident.accuracy_meters)} m</small>

@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/back-link";
 import { createCheckpointAction } from "@/app/actions/checkpoints";
 import { CheckpointForm } from "@/components/forms/checkpoint-form";
 import { ErrorBanner } from "@/components/forms/error-banner";
@@ -10,5 +11,5 @@ export default async function NewCheckpointPage({ searchParams }: { searchParams
   const defaultCondominiumId = activeCondominiums.some((item) => item.id === requestedCondominiumId)
     ? requestedCondominiumId
     : undefined;
-  return <section className="form-page"><span className="eyebrow">Nuevo control</span><h1>Crear punto QR</h1><p className="lead">Al guardarlo se generará un código firmado listo para imprimir.</p><ErrorBanner message={typeof query.error === "string" ? query.error : undefined} /><CheckpointForm action={createCheckpointAction} condominiums={activeCondominiums} defaultCondominiumId={defaultCondominiumId} /></section>;
+  return <section className="form-page"><BackLink href={defaultCondominiumId ? `/master/condominiums/${defaultCondominiumId}/checkpoints` : "/master/checkpoints"} label="Volver a puntos QR" /><span className="eyebrow">Nuevo control</span><h1>Crear punto QR</h1><p className="lead">Al guardarlo se generará un código firmado listo para imprimir.</p><ErrorBanner message={typeof query.error === "string" ? query.error : undefined} /><CheckpointForm action={createCheckpointAction} condominiums={activeCondominiums} defaultCondominiumId={defaultCondominiumId} /></section>;
 }

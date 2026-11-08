@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/back-link";
 import { notFound } from "next/navigation";
 
 import { updateCheckpointAction } from "@/app/actions/checkpoints";
@@ -9,5 +10,5 @@ export default async function EditCheckpointPage({ params, searchParams }: { par
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const { checkpoint, condominiums } = await getCheckpoint(id);
   if (!checkpoint) notFound();
-  return <section className="form-page"><span className="eyebrow">Edición</span><h1>{checkpoint.name}</h1><ErrorBanner message={typeof query.error === "string" ? query.error : undefined} /><CheckpointForm action={updateCheckpointAction.bind(null, id)} checkpoint={checkpoint} condominiums={condominiums} /></section>;
+  return <section className="form-page"><BackLink href={`/master/condominiums/${checkpoint.condominium_id}/checkpoints`} label="Volver a puntos QR" /><span className="eyebrow">Edición</span><h1>{checkpoint.name}</h1><ErrorBanner message={typeof query.error === "string" ? query.error : undefined} /><CheckpointForm action={updateCheckpointAction.bind(null, id)} checkpoint={checkpoint} condominiums={condominiums} /></section>;
 }

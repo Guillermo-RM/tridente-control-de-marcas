@@ -354,8 +354,16 @@ th { color: var(--muted); background: #f8faf8; font-size: 0.78rem; text-transfor
 .incidents-filter-prompt { padding: 38px 24px; color: var(--muted); text-align: center; }
 .incidents-filter-prompt strong { color: var(--foreground); font-size: 1rem; }
 .incidents-filter-prompt p { margin: 8px 0 0; }
-.incident-table-wrap select { min-width: 118px; padding: 8px; border: 1px solid #cbd5ce; border-radius: 8px; background: white; }
-.incident-description { min-width: 260px; max-width: 420px; white-space: normal; line-height: 1.45; }
+.incident-table-wrap table { min-width: 880px; table-layout: fixed; }
+.incident-table-wrap th, .incident-table-wrap td {
+  padding-inline: 10px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.incident-table-wrap th:nth-child(5) { width: 24%; }
+.incident-table-wrap th:last-child { width: 134px; }
+.incident-table-wrap select { width: 100%; padding: 8px; border: 1px solid #cbd5ce; border-radius: 8px; background: white; }
+.incident-description { line-height: 1.45; }
 .incident-accuracy { display: block; margin-top: 5px; color: var(--muted); }
 .incident-row-unread { background: #f1faf5; }
 .incident-row-unread td:first-child { box-shadow: inset 4px 0 0 var(--primary); }

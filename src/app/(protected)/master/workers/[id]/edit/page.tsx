@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/back-link";
 import { notFound } from "next/navigation";
 
 import { deleteWorkerAction, updateWorkerAction } from "@/app/actions/workers";
@@ -13,6 +14,7 @@ export default async function EditWorkerPage({ params, searchParams }: { params:
 
   return (
     <section className="form-page">
+      <BackLink href="/master/workers" label="Volver a trabajadores" />
       <span className="eyebrow">Edición</span>
       <h1>{worker.full_name}</h1>
       <ErrorBanner message={typeof query.error === "string" ? query.error : undefined} />
