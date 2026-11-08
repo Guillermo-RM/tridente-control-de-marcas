@@ -18,13 +18,17 @@ export async function incidentPhoto(id: string, organizationId: string) {
   const headers = { "Cache-Control": "private, no-store" };
   try {
     const incident = await getIncidentDetail(id, organizationId);
-    if (!incident || !["image/jpeg", "image/png", "image/webp"].includes(incident.evidence_mime_type)) {
-      return new Response(null, { status: 404, headers });
-    }
-    const { data, error } = await createAdminClient().storage.from("incident-evidence").download(incident.evidence_path);
-    if (error || !data) return new Response(null, { status: 404, headers });
-    return new Response(data, { headers: { ...headers, "Content-Type": incident.evidence_mime_type } });
+    if (!incident) return new Response(null, { status: 404, headers });
+    const photo = await downloadIncidentPhoto(incident);
+    if (!photo) return new Response(null, { status: 404, headers });
+    return new Response(photo, { headers: { ...headers, "Content-Type": incident.evidence_mime_type } });
   } catch {
     return new Response(null, { status: 500, headers });
   }
+}
+
+export async function downloadIncidentPhoto(incident: { evidence_path: string; evidence_mime_type: string }) {
+  if (!["image/jpeg", "image/png", "image/webp"].includes(incident.evidence_mime_type)) return null;
+  const { data, error } = await createAdminClient().storage.from("incident-evidence").download(incident.evidence_path);
+  return error ? null : data;
 }
