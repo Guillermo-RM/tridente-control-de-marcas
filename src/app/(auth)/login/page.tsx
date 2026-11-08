@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/auth/login-form";
@@ -29,7 +30,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <main className="centered-page">
       <section className="auth-card">
-        <div className="brand-mark" aria-hidden="true">T</div>
+        <Image className="brand-logo login-logo" src="/tridente-seguridad.webp" width={72} height={72} alt="Tridente Seguridad" />
         <span className="eyebrow">Tridente Control</span>
         <h1>Acceso seguro</h1>
         <p>Ingresa con la cuenta asignada por tu administrador.</p>
