@@ -16,27 +16,26 @@ export function LoginForm({ next }: { next?: string }) {
   return (
     <form action={action} className="auth-form">
       <input name="next" type="hidden" value={next ?? ""} />
-      <label>
-        Nickname
-        <input
-          autoComplete="username"
-          autoCapitalize="none"
-          spellCheck={false}
-          name="nickname"
-          placeholder="juan.perez"
-          minLength={3}
-          maxLength={32}
-          required
-          type="text"
-        />
-      </label>
+      <input
+        autoComplete="username"
+        autoCapitalize="none"
+        spellCheck={false}
+        name="nickname"
+        placeholder="Nombre de usuario"
+        aria-label="Nombre de usuario"
+        minLength={3}
+        maxLength={32}
+        required
+        type="text"
+      />
       <div className="grid gap-2">
-        <label htmlFor="login-password">Contraseña</label>
         <div className="login-password-field">
           <input
             autoComplete="current-password"
             id="login-password"
             name="password"
+            placeholder="Contraseña"
+            aria-label="Contraseña"
             required
             type={passwordVisible ? "text" : "password"}
           />

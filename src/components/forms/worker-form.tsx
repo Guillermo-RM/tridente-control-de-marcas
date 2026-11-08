@@ -15,7 +15,7 @@ export function WorkerForm({
 }) {
   return (
     <form action={action} className="entity-form">
-      <label>Nickname<input autoComplete="off" autoCapitalize="none" spellCheck={false} defaultValue={String(worker?.nickname ?? "")} minLength={3} maxLength={32} name="nickname" required /><small>Único en el sistema. Entre 3 y 32 caracteres, sin espacios ni tildes.</small></label>
+      <label>Nombre de usuario<input autoComplete="username" autoCapitalize="none" spellCheck={false} defaultValue={String(worker?.nickname ?? "")} minLength={3} maxLength={32} name="nickname" required /><small>Único en el sistema. Entre 3 y 32 caracteres, sin espacios ni tildes.</small></label>
       <label>Nombre completo<input defaultValue={String(worker?.full_name ?? "")} maxLength={120} name="fullName" required /></label>
       <label>Código de empleado<input defaultValue={String(worker?.employee_code ?? "")} maxLength={40} name="employeeCode" required /></label>
       {creating ? <label>Contraseña inicial<input autoComplete="new-password" name="password" required type="password" /></label> : null}

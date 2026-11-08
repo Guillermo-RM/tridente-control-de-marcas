@@ -31,11 +31,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
     <main className="centered-page">
       <section className="auth-card">
         <Image className="brand-logo login-logo" src="/tridente-seguridad.webp" width={72} height={72} alt="Tridente Seguridad" />
-        <span className="eyebrow">Tridente Control</span>
-        <h1>Acceso seguro</h1>
-        <p>Ingresa con la cuenta asignada por tu administrador.</p>
+        <span className="eyebrow login-brand">Tridente Control</span>
         <LoginForm next={typeof query.next === "string" ? query.next : undefined} />
-        <small>Las cuentas no pueden registrarse públicamente.</small>
       </section>
     </main>
   );
