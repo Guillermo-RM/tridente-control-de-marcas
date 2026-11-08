@@ -17,14 +17,6 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(self), geolocation=(self), microphone=()" },
         ],
       },
-      {
-        source: "/incidencias/compartida/:token",
-        headers: [
-          { key: "Cache-Control", value: "private, no-store" },
-          { key: "Referrer-Policy", value: "no-referrer" },
-          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
-        ],
-      },
     ];
   },
 };
