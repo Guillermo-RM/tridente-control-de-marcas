@@ -53,9 +53,10 @@ export default async function ReportsPage({
           <h1>Reporte de marcas</h1>
         </div>
         {condominiumId ? (
-          <Link className="secondary-link" href={`/api/reports/scans.csv?${exportParams}`}>
-            Exportar CSV
-          </Link>
+          <div className="report-export-actions">
+            <a className="secondary-link" href={`/api/reports/scans.csv?${exportParams}`}>Exportar CSV</a>
+            <a className="primary-link" href={`/api/reports/scans.pdf?${exportParams}`}>Exportar PDF</a>
+          </div>
         ) : null}
       </div>
       <form className="filter-bar report-filter-bar">

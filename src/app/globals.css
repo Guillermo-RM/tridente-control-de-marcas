@@ -334,6 +334,12 @@ button:disabled { cursor: wait; opacity: 0.65; }
 
 .filter-bar { display: grid; grid-template-columns: 1fr 1fr 1.4fr 1.4fr auto; align-items: end; gap: 10px; margin-bottom: 22px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: white; }
 .report-filter-bar { grid-template-columns: 1.35fr 1.35fr 1fr 1fr auto auto; }
+.report-filter-bar > label { min-width: 0; }
+.report-export-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.report-export-actions a { min-height: 44px; white-space: nowrap; }
+@media (min-width: 761px) and (max-width: 960px) {
+  .report-filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .incident-filter-bar { grid-template-columns: 1.25fr 1.25fr 1fr 1fr 1fr auto auto; }
 .report-clear-link { min-height: 46px; }
 .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; background: white; }
@@ -379,6 +385,7 @@ th { color: var(--muted); background: #f8faf8; font-size: 0.78rem; text-transfor
 .print-control-group { display: flex; align-items: center; gap: 10px; }
 
 @media (max-width: 760px) {
+  .report-export-actions a { flex: 1 1 125px; }
   .auth-card { padding: 28px; }
   .app-header, .user-menu { align-items: flex-start; }
   .user-menu { gap: 8px; }

@@ -6,6 +6,7 @@ import { uuidSchema } from "@/lib/domain/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const REPORT_PAGE_SIZE = 50;
+export const REPORT_EXPORT_LIMIT = 10_000;
 
 export type ReportFilters = {
   workerId?: string;
@@ -166,10 +167,10 @@ export async function getSelectedMasterReportPage(
 }
 
 export async function getMasterReportExport(
+  organizationId: string,
   condominiumId: string,
   filters: ReportFilters = {},
 ) {
-  const context = await requireMaster();
   if (!uuidSchema.safeParse(condominiumId).success) {
     throw new Error("INVALID_CONDOMINIUM");
   }
@@ -183,25 +184,36 @@ export async function getMasterReportExport(
     .from("condominiums")
     .select("id, name")
     .eq("id", condominiumId)
-    .eq("organization_id", context.profile.organization_id)
+    .eq("organization_id", organizationId)
     .maybeSingle();
   if (condominiumError) throw new Error("REPORT_QUERY_FAILED");
   if (!condominium) throw new Error("CONDOMINIUM_NOT_FOUND");
 
-  let query = admin
-    .from("scan_events")
-    .select("id, scanned_at, worker_id, worker_name_snapshot, checkpoint_id, checkpoint_name_snapshot, condominium_id, ip_address, latitude, longitude, accuracy_meters, distance_meters, location_status, condominiums(name)")
-    .eq("organization_id", context.profile.organization_id)
-    .eq("condominium_id", condominiumId)
-    .gte("scanned_at", start.toISOString())
-    .lte("scanned_at", end.toISOString())
-    .order("scanned_at", { ascending: false })
-    .order("id", { ascending: false })
-    .limit(10_000);
+  const events: ReportScanEvent[] = [];
+  while (true) {
+    let query = admin
+      .from("scan_events")
+      .select("id, scanned_at, worker_id, worker_name_snapshot, checkpoint_id, checkpoint_name_snapshot, condominium_id, ip_address, latitude, longitude, accuracy_meters, distance_meters, location_status, condominiums(name)")
+      .eq("organization_id", organizationId)
+      .eq("condominium_id", condominiumId)
+      .gte("scanned_at", start.toISOString())
+      .lte("scanned_at", end.toISOString())
+      .order("scanned_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(Math.min(500, REPORT_EXPORT_LIMIT + 1 - events.length));
 
-  if (filters.workerId) query = query.eq("worker_id", filters.workerId);
-  const { data, error } = await query;
+    if (filters.workerId) query = query.eq("worker_id", filters.workerId);
+    const last = events.at(-1);
+    if (last) {
+      query = query.or(
+        `scanned_at.lt.${last.scanned_at},and(scanned_at.eq.${last.scanned_at},id.lt.${last.id})`,
+      );
+    }
+    const { data, error } = await query;
+    if (error) throw new Error("REPORT_QUERY_FAILED");
+    if (!data?.length) return { condominium, events, start, end };
 
-  if (error) throw new Error("REPORT_QUERY_FAILED");
-  return { condominium, events: (data ?? []) as ReportScanEvent[] };
+    events.push(...(data as ReportScanEvent[]));
+    if (events.length > REPORT_EXPORT_LIMIT) throw new Error("REPORT_EXPORT_LIMIT");
+  }
 }
