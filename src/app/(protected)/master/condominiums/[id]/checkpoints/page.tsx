@@ -30,10 +30,22 @@ export default async function CondominiumCheckpointsPage({
         </div>
         <div className="row-actions">
           <Link className="secondary-link" href={`/master/condominiums/${id}`}>Volver</Link>
-          {condominium.active ? <Link className="primary-link" href={`/master/checkpoints/new?condominiumId=${id}`}>Nuevo punto QR</Link> : null}
+          {condominium.active ? (
+            <div className="flex flex-wrap gap-2">
+              <Link className="secondary-link" href={`/master/condominiums/${id}/checkpoints/import`}>
+                Utilizar QR existente
+              </Link>
+              <Link className="primary-link" href={`/master/checkpoints/new?condominiumId=${id}`}>
+                Nuevo punto QR
+              </Link>
+            </div>
+          ) : null}
         </div>
       </div>
       <ErrorBanner message={typeof query.error === "string" ? query.error : undefined} />
+      {query.imported === "1" ? (
+        <p className="status-chip">QR vinculado. Las marcas se recibirán en este servidor.</p>
+      ) : null}
 
       <div className="entity-list">
         {checkpoints.map((checkpoint) => (
@@ -78,3 +90,4 @@ export default async function CondominiumCheckpointsPage({
     </section>
   );
 }
+

@@ -34,6 +34,13 @@ export async function createWorkerAction(formData: FormData) {
     email_confirm: true,
   });
   if (authResult.error || !authResult.data.user) {
+    if (authResult.error?.code === "weak_password") {
+      redirectWithError("/master/workers/new", "La contraseña inicial no cumple los requisitos de seguridad de Supabase. Prueba con una más larga.");
+    }
+    console.error("[workers] Auth account creation failed", {
+      code: authResult.error?.code,
+      status: authResult.error?.status,
+    });
     redirectWithError("/master/workers/new", "No se pudo crear la cuenta del trabajador.");
   }
 
@@ -152,3 +159,4 @@ export async function deleteWorkerAction(id: string) {
   revalidatePath("/master", "layout");
   redirect("/master/workers");
 }
+

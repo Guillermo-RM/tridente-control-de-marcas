@@ -1,4 +1,5 @@
 import { isIP } from "node:net";
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { getAuthContext } from "@/lib/auth/guards";
@@ -19,21 +20,43 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Lectura QR no válida." }, { status: 400 });
   }
 
+  const admin = createAdminClient();
   const token = verifyQrToken(parsed.data.token);
-  if (!token) {
-    return NextResponse.json({ message: "El QR no es válido o fue alterado." }, { status: 400 });
+  let checkpoint = null;
+
+  if (token) {
+    const signedCheckpoint = await admin.from("checkpoints")
+      .select("id, name, token_version, active, condominiums!inner(active)")
+      .eq("id", token.checkpointId)
+      .eq("organization_id", context.profile.organization_id)
+      .eq("active", true)
+      .eq("condominiums.active", true)
+      .maybeSingle();
+    if (signedCheckpoint.data?.token_version === token.version) {
+      checkpoint = signedCheckpoint.data;
+    }
   }
 
-  const admin = createAdminClient();
-  const checkpointResult = await admin.from("checkpoints")
-    .select("id, name, token_version, active, condominiums!inner(active)")
-    .eq("id", token.checkpointId)
-    .eq("organization_id", context.profile.organization_id)
-    .eq("active", true)
-    .eq("condominiums.active", true)
-    .single();
-  const checkpoint = checkpointResult.data;
-  if (!checkpoint || checkpoint.token_version !== token.version) {
+  if (!checkpoint) {
+    const tokenHash = createHash("sha256").update(parsed.data.token).digest("hex");
+    const importedToken = await admin.from("checkpoint_imported_tokens")
+      .select("checkpoint_id")
+      .eq("organization_id", context.profile.organization_id)
+      .eq("token_hash", tokenHash)
+      .maybeSingle();
+    if (importedToken.data) {
+      const importedCheckpoint = await admin.from("checkpoints")
+        .select("id, name, token_version, active, condominiums!inner(active)")
+        .eq("id", importedToken.data.checkpoint_id)
+        .eq("organization_id", context.profile.organization_id)
+        .eq("active", true)
+        .eq("condominiums.active", true)
+        .maybeSingle();
+      checkpoint = importedCheckpoint.data;
+    }
+  }
+
+  if (!checkpoint) {
     return NextResponse.json({ message: "Este QR está inactivo o fue reemplazado." }, { status: 410 });
   }
 
@@ -104,3 +127,4 @@ export async function POST(request: Request) {
     message: data[0].created ? "Marca guardada correctamente." : "Esta marca ya se registró hace menos de un minuto.",
   }, { status: data[0].created ? 201 : 200 });
 }
+

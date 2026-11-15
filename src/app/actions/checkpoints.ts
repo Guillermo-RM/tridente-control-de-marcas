@@ -2,10 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createHash } from "node:crypto";
 
 import { auditAction, redirectWithError } from "@/lib/actions/utils";
 import { requireMaster } from "@/lib/auth/guards";
 import { checkpointSchema, formValues, uuidSchema } from "@/lib/domain/schemas";
+import { extractScanToken } from "@/lib/security/scan-token";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function createCheckpointAction(formData: FormData) {
@@ -34,6 +36,73 @@ export async function createCheckpointAction(formData: FormData) {
   revalidatePath("/master");
   revalidatePath(`/master/condominiums/${parsed.data.condominiumId}/checkpoints`);
   redirect(`/master/checkpoints/${data.id}/print`);
+}
+
+export async function importCheckpointQrAction(condominiumId: string, formData: FormData) {
+  const context = await requireMaster();
+  const returnPath = `/master/condominiums/${condominiumId}/checkpoints`;
+  if (!uuidSchema.safeParse(condominiumId).success) {
+    redirectWithError("/master/condominiums", "Condominio no válido.");
+  }
+
+  const parsed = checkpointSchema.safeParse({
+    ...formValues(formData),
+    condominiumId,
+  });
+  const rawQr = String(formData.get("qrContent") ?? "").trim();
+  const token = extractScanToken(rawQr);
+  if (!parsed.success) redirectWithError(`${returnPath}/import`, parsed.error.issues[0].message);
+  if (!token || token.length < 40 || token.length > 1000 || !token.startsWith("tc1.")) {
+    redirectWithError(`${returnPath}/import`, "Pega un enlace o token QR válido de Tridente Control.");
+  }
+
+  const admin = createAdminClient();
+  const condominium = await admin.from("condominiums").select("id")
+    .eq("id", condominiumId)
+    .eq("organization_id", context.profile.organization_id)
+    .eq("active", true)
+    .single();
+  if (!condominium.data) redirectWithError(returnPath, "Condominio no válido.");
+
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const existingToken = await admin.from("checkpoint_imported_tokens")
+    .select("checkpoint_id").eq("token_hash", tokenHash).maybeSingle();
+  if (existingToken.data) {
+    redirectWithError(`${returnPath}/import`, "Ese QR ya está asociado a un punto de control.");
+  }
+
+  const checkpoint = await admin.from("checkpoints").insert({
+    organization_id: context.profile.organization_id,
+    condominium_id: condominiumId,
+    name: parsed.data.name,
+    description: parsed.data.description || null,
+    radius_meters: parsed.data.radiusMeters,
+    created_by: context.user.id,
+  }).select("id").single();
+  if (checkpoint.error || !checkpoint.data) {
+    redirectWithError(`${returnPath}/import`, "No se pudo crear el punto QR. Revisa que el nombre no esté repetido.");
+  }
+
+  const imported = await admin.from("checkpoint_imported_tokens").insert({
+    organization_id: context.profile.organization_id,
+    checkpoint_id: checkpoint.data.id,
+    token_hash: tokenHash,
+    created_by: context.user.id,
+  });
+  if (imported.error) {
+    await admin.from("checkpoints").delete().eq("id", checkpoint.data.id)
+      .eq("organization_id", context.profile.organization_id);
+    redirectWithError(`${returnPath}/import`, "No se pudo asociar el QR. Verifica que no esté utilizado.");
+  }
+
+  await auditAction(context, {
+    action: "checkpoint.import_existing_qr",
+    entityType: "checkpoint",
+    entityId: checkpoint.data.id,
+    after: { condominium_id: condominiumId, name: parsed.data.name, qr_imported: true },
+  });
+  revalidatePath(returnPath);
+  redirect(`${returnPath}?imported=1`);
 }
 
 export async function updateCheckpointAction(id: string, formData: FormData) {
@@ -132,3 +201,4 @@ export async function rotateCheckpointTokenAction(id: string) {
   await auditAction(context, { action: "checkpoint.token_rotate", entityType: "checkpoint", entityId: id, before: { token_version: before.data.token_version }, after: { token_version: nextVersion } });
   revalidatePath(`/master/checkpoints/${id}/print`);
 }
+
