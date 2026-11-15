@@ -25,9 +25,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const margin = 14;
     const pageHeight = pdf.internal.pageSize.getHeight();
     const contentWidth = pdf.internal.pageSize.getWidth() - margin * 2;
-    pdf.setProperties({ title: "Tridente Control - Reporte de incidencia" });
+    pdf.setProperties({ title: "Control de Rondas - Reporte de incidencia" });
     pdf.setFontSize(17);
-    pdf.text("Tridente Control | Reporte de incidencia", margin, 19);
+    pdf.text("Control de Rondas | Reporte de incidencia", margin, 19);
 
     let nextY = 26;
     autoTable(pdf, {
@@ -84,3 +84,4 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     return new Response("No se pudo generar el reporte en PDF.", { status: 500, headers });
   }
 }
+

@@ -47,10 +47,11 @@ export default async function PrintCheckpointPage({ params }: { params: Promise<
         unoptimized
         width={420}
       />
-      <strong className="no-print">Escanea este código con Tridente Control</strong>
+      <strong className="no-print">Escanea este código con Control de Rondas</strong>
       <small className="no-print">
         Versión {checkpoint.token_version} · Los códigos anteriores quedan inválidos al rotar.
       </small>
     </section>
   );
 }
+

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { logoutAction } from "@/app/actions/auth";
@@ -19,8 +18,7 @@ export function AppShell({
     <div className="app-frame">
       <header className="app-header">
         <Link className="app-brand" href={context.profile.role === "master" ? "/master/condominiums" : "/worker"}>
-          <Image className="brand-logo" src="/tridente-seguridad.webp" width={42} height={42} alt="" />
-          <span>Tridente Control</span>
+          <span>Control de Rondas</span>
         </Link>
         <div className="user-menu">
           {context.profile.role === "master" ? <IncidentNotificationButton initialCount={initialUnreadIncidents} /> : null}
@@ -38,3 +36,4 @@ export function AppShell({
     </div>
   );
 }
+

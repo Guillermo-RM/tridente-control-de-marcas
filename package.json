@@ -1,5 +1,5 @@
 {
-  "name": "tridente-app",
+  "name": "control-de-rondas",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -39,3 +39,4 @@
     "vitest": "^3.2.6"
   }
 }
+

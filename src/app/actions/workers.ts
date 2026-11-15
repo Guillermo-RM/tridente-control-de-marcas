@@ -27,7 +27,7 @@ export async function createWorkerAction(formData: FormData) {
   const existing = await admin.from("profiles").select("id").eq("nickname", parsed.data.nickname).maybeSingle();
   if (existing.error) redirectWithError("/master/workers/new", "No se pudo verificar el nickname.");
   if (existing.data) redirectWithError("/master/workers/new", "Ese nickname no está disponible.");
-  const internalAuthEmail = `worker-${randomUUID()}@accounts.tridente.example`;
+  const internalAuthEmail = `worker-${randomUUID()}@accounts.rondas.example`;
   const authResult = await admin.auth.admin.createUser({
     email: internalAuthEmail,
     password: parsed.data.password,

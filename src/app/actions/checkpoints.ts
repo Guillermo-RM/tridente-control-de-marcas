@@ -53,7 +53,7 @@ export async function importCheckpointQrAction(condominiumId: string, formData: 
   const token = extractScanToken(rawQr);
   if (!parsed.success) redirectWithError(`${returnPath}/import`, parsed.error.issues[0].message);
   if (!token || token.length < 40 || token.length > 1000 || !token.startsWith("tc1.")) {
-    redirectWithError(`${returnPath}/import`, "Pega un enlace o token QR válido de Tridente Control.");
+    redirectWithError(`${returnPath}/import`, "Pega un enlace o token QR válido de Control de Rondas.");
   }
 
   const admin = createAdminClient();

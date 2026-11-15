@@ -15,7 +15,7 @@
 
 ## Modelo inicial
 
-`organizations` representa al cliente/empresa que opera Tridente. Un perfil siempre
+`organizations` representa al cliente/empresa que opera el sistema. Un perfil siempre
 pertenece a una organización. Los condominios se agregarán debajo de esta capa en
 la prioridad 2; así un `master` podrá administrar varios condominios sin mezclar
 datos con otra organización.
@@ -42,3 +42,4 @@ acciones de servidor con validación, autorización y auditoría.
 6. Configurar dominio, redirect URLs, backups y alertas.
 
 La migración no se ejecutó porque no existe todavía un proyecto remoto vinculado.
+

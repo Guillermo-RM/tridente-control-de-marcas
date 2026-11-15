@@ -1,4 +1,4 @@
-# Arquitectura de Tridente Control
+# Arquitectura de Control de Rondas
 
 ## Jerarquía de datos
 
@@ -50,3 +50,4 @@ acceso obsoletos.
 
 Las migraciones deben probarse primero en desarrollo, luego en staging y solo
 después promoverse a producción. Los secretos deben ser distintos por entorno.
+

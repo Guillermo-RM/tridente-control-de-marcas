@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Tridente Control",
-    template: "%s | Tridente Control",
+    default: "Control de Rondas",
+    template: "%s | Control de Rondas",
   },
   description: "Control seguro de rondas y puntos QR para condominios.",
 };
@@ -30,3 +30,4 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     </html>
   );
 }
+

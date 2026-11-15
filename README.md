@@ -1,4 +1,4 @@
-# Tridente Control
+# Control de Rondas
 
 Aplicación para administrar recorridos de seguridad en condominios. Permite que los oficiales registren puntos de control con códigos QR y reporten incidencias, mientras el personal administrador consulta la actividad por condominio y trabajador.
 

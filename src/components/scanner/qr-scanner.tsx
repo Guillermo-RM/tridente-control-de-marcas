@@ -37,7 +37,7 @@ export function QrScanner({ initialToken }: { initialToken?: string }) {
     if (submittingRef.current) return;
     const token = extractScanToken(rawValue);
     if (!token) {
-      setResult({ kind: "error", message: "El código leído no pertenece a Tridente Control." });
+      setResult({ kind: "error", message: "El código leído no pertenece a Control de Rondas." });
       return;
     }
 
@@ -127,3 +127,4 @@ export function QrScanner({ initialToken }: { initialToken?: string }) {
     </section>
   );
 }
+

@@ -1,4 +1,4 @@
-project_id = "tridente-control"
+project_id = "control-de-rondas"
 
 [auth]
 enabled = true
@@ -10,3 +10,4 @@ minimum_password_length = 6
 [auth.mfa.totp]
 enroll_enabled = true
 verify_enabled = true
+

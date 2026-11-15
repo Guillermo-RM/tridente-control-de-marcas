@@ -11,9 +11,9 @@ export function GET(request: Request) {
   return downloadScanReport(request, "pdf", ({ condominium, events, start, end }) => {
     const pdf = new jsPDF({ format: "a4", compress: true });
     const margin = 14;
-    pdf.setProperties({ title: "Tridente Control - Reporte de marcas" });
+    pdf.setProperties({ title: "Control de Rondas - Reporte de marcas" });
     pdf.setFontSize(17);
-    pdf.text("Tridente Control | Reporte de marcas", margin, 19);
+    pdf.text("Control de Rondas | Reporte de marcas", margin, 19);
     pdf.setFontSize(10);
     const condominiumLines = pdf.splitTextToSize(`Condominio: ${condominium.name}`, 182);
     pdf.text(condominiumLines, margin, 27);
@@ -47,3 +47,4 @@ export function GET(request: Request) {
     return pdf.output("arraybuffer");
   });
 }
+

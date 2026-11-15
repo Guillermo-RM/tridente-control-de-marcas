@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/auth/login-form";
@@ -30,10 +29,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <main className="centered-page">
       <section className="auth-card">
-        <Image className="brand-logo login-logo" src="/tridente-seguridad.webp" width={72} height={72} alt="Tridente Seguridad" />
-        <span className="eyebrow login-brand">Tridente Control</span>
+        <span className="eyebrow login-brand">Control de Rondas</span>
         <LoginForm next={typeof query.next === "string" ? query.next : undefined} />
       </section>
     </main>
   );
 }
+
